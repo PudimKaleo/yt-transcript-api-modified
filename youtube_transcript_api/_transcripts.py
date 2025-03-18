@@ -465,7 +465,13 @@ class _TranscriptParser:
             html_regex = re.compile(r"<[^>]*>", re.IGNORECASE)
         return html_regex
 
-    def parse(self, raw_data: str) -> List[FetchedTranscriptSnippet]:
+    def parse(self, raw_data: str, start_time: float = 0) -> List[FetchedTranscriptSnippet]:
+        """
+        Parses the raw transcript data and filters snippets based on the start_time.
+        :param raw_data: the raw XML transcript data
+        :param start_time: the timestamp (in seconds) from which to start extracting captions
+        :return: a list of FetchedTranscriptSnippet objects
+        """
         return [
             FetchedTranscriptSnippet(
                 text=re.sub(self._html_regex, "", unescape(xml_element.text)),
@@ -473,5 +479,5 @@ class _TranscriptParser:
                 duration=float(xml_element.attrib.get("dur", "0.0")),
             )
             for xml_element in ElementTree.fromstring(raw_data)
-            if xml_element.text is not None
+            if xml_element.text is not None and float(xml_element.attrib["start"]) >= start_time
         ]
